@@ -47,10 +47,14 @@ class Hm_Handler_process_ai_generate_request extends Hm_Handler_Module {
         $user_prompt = '';
         
         if ($mode === 'prompt' && array_key_exists('ai_prompt', $this->request->post)) {
+            // For custom prompts, use the configured system prompt
             $user_prompt = $this->request->post['ai_prompt'];
         } elseif ($mode === 'reply' && array_key_exists('ai_context', $this->request->post)) {
+            // For replies, OVERRIDE system prompt to focus on responding (not following instructions)
+            $system_prompt = 'You are an email reply assistant. Your job is to READ the email provided and write a thoughtful, appropriate RESPONSE to it. You must RESPOND to what the sender wrote, NOT rephrase or repeat their message. CRITICAL: Output ONLY valid JSON: {"body":"your actual reply"}. NO subject field. NO markdown. NO placeholders. NO explanations. Write the REAL reply addressing their questions/points. Plain text only.';
             $context = $this->request->post['ai_context'];
-            $user_prompt = "Generate a professional reply to the following email:\n\n" . $context;
+            // Make it crystal clear this is an email TO RESPOND TO, not instructions to follow
+            $user_prompt = "The following is an email someone sent to me. I need to REPLY to this email. Write my response:\n\n---EMAIL I RECEIVED---\n" . $context . "\n---END EMAIL---\n\nWrite my reply to this email:";
         } else {
             $this->out('ai_generated_text', '');
             Hm_Msgs::add('Missing prompt or context', 'danger');

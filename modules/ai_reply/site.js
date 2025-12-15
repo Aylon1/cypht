@@ -43,9 +43,46 @@ var ai_generate_reply = function() {
             $('.ai_generate_reply').prop('disabled', false).html('<i class="bi bi-robot"></i> AI Reply');
             
             if (res.ai_generated_text) {
-                // Insert the generated text at the beginning of the compose body
+                var generated = res.ai_generated_text.trim();
+                var body = '';
+                
+                // Try to parse as JSON first
+                try {
+                    var json_data = JSON.parse(generated);
+                    if (json_data.body) {
+                        body = json_data.body;
+                    } else {
+                        body = generated;
+                    }
+                } catch (e) {
+                    // If not valid JSON, try to extract body from malformed JSON
+                    var body_match = generated.match(/"body"\s*:\s*"([\s\S]+?)"\s*}/);
+                    if (body_match) {
+                        body = body_match[1];
+                        // Unescape JSON string
+                        body = body.replace(/\\n/g, '\n').replace(/\\"/g, '"').replace(/\\\\/g, '\\');
+                    } else {
+                        // Remove JSON artifacts if present
+                        body = generated.replace(/^\s*\{\s*"body"\s*:\s*"/i, '').replace(/"\s*\}\s*$/, '');
+                        body = body.replace(/\\n/g, '\n').replace(/\\"/g, '"');
+                    }
+                }
+                
+                // Strip markdown formatting
+                if (body) {
+                    body = body.replace(/\*\*(.+?)\*\*/g, '$1');
+                    body = body.replace(/__(.+?)__/g, '$1');
+                    body = body.replace(/\*(.+?)\*/g, '$1');
+                    body = body.replace(/_(.+?)_/g, '$1');
+                    body = body.replace(/^#+\s+(.+?)$/gm, '$1');
+                    // Remove placeholders like [specific feature], [Name], etc.
+                    body = body.replace(/\[[\w\s]+\]/g, '...');
+                    body = body.trim();
+                }
+                
+                // Insert the reply at the beginning of the compose body
                 var current_body = $('.compose_body').val();
-                var new_body = res.ai_generated_text + '\n\n' + current_body;
+                var new_body = body + '\n\n' + current_body;
                 $('.compose_body').val(new_body);
                 
                 // If using HTML editor, update it too
@@ -128,16 +165,16 @@ var ai_generate_from_prompt = function() {
                 } catch (e) {
                     // If not JSON, try multiple subject patterns
                     // Pattern 1: **Betreff:** or **Subject:** (markdown bold)
-                    var md_subject_match = generated.match(/^\*\*(?:Subject|Betreff|Objet|Asunto|Oggetto|Assunto):\*\*\s*(.+?)$/im);
+                    var md_subject_match = generated.match(/^\*\*(?:Subject|Betreff|Objet|Asunto|Oggetto|Assunto|Tárgy):\*\*\s*(.+?)$/im);
                     if (md_subject_match) {
                         subject = md_subject_match[1].trim();
-                        body = generated.replace(/^\*\*(?:Subject|Betreff|Objet|Asunto|Oggetto|Assunto):\*\*\s*.+?$/im, '').trim();
+                        body = generated.replace(/^\*\*(?:Subject|Betreff|Objet|Asunto|Oggetto|Assunto|Tárgy):\*\*\s*.+?$/im, '').trim();
                     } else {
                         // Pattern 2: Subject: or Betreff: (plain)
-                        var plain_subject_match = generated.match(/^(?:Subject|Betreff|Objet|Asunto|Oggetto|Assunto):\s*(.+?)$/im);
+                        var plain_subject_match = generated.match(/^(?:Subject|Betreff|Objet|Asunto|Oggetto|Assunto|Tárgy):\s*(.+?)$/im);
                         if (plain_subject_match) {
                             subject = plain_subject_match[1].trim();
-                            body = generated.replace(/^(?:Subject|Betreff|Objet|Asunto|Oggetto|Assunto):\s*.+?$/im, '').trim();
+                            body = generated.replace(/^(?:Subject|Betreff|Objet|Asunto|Oggetto|Assunto|Tárgy):\s*.+?$/im, '').trim();
                         } else {
                             // No subject found, use entire text as body
                             body = generated;
