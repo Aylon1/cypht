@@ -112,13 +112,74 @@ var ai_generate_from_prompt = function() {
             $('#ai_generate_from_prompt_btn').prop('disabled', false).html('Generate');
             
             if (res.ai_generated_text) {
-                // Insert the generated text into the compose body
+                var generated = res.ai_generated_text.trim();
+                var subject = '';
+                var body = '';
+                
+                // Try to parse as JSON first
+                try {
+                    var json_data = JSON.parse(generated);
+                    if (json_data.subject) {
+                        subject = json_data.subject;
+                    }
+                    if (json_data.body) {
+                        body = json_data.body;
+                    }
+                } catch (e) {
+                    // If not JSON, try multiple subject patterns
+                    // Pattern 1: **Betreff:** or **Subject:** (markdown bold)
+                    var md_subject_match = generated.match(/^\*\*(?:Subject|Betreff|Objet|Asunto|Oggetto|Assunto):\*\*\s*(.+?)$/im);
+                    if (md_subject_match) {
+                        subject = md_subject_match[1].trim();
+                        body = generated.replace(/^\*\*(?:Subject|Betreff|Objet|Asunto|Oggetto|Assunto):\*\*\s*.+?$/im, '').trim();
+                    } else {
+                        // Pattern 2: Subject: or Betreff: (plain)
+                        var plain_subject_match = generated.match(/^(?:Subject|Betreff|Objet|Asunto|Oggetto|Assunto):\s*(.+?)$/im);
+                        if (plain_subject_match) {
+                            subject = plain_subject_match[1].trim();
+                            body = generated.replace(/^(?:Subject|Betreff|Objet|Asunto|Oggetto|Assunto):\s*.+?$/im, '').trim();
+                        } else {
+                            // No subject found, use entire text as body
+                            body = generated;
+                        }
+                    }
+                }
+                
+                // Strip markdown formatting from body
+                if (body) {
+                    // Remove bold (**text** or __text__)
+                    body = body.replace(/\*\*(.+?)\*\*/g, '$1');
+                    body = body.replace(/__(.+?)__/g, '$1');
+                    // Remove italic (*text* or _text_)
+                    body = body.replace(/\*(.+?)\*/g, '$1');
+                    body = body.replace(/_(.+?)_/g, '$1');
+                    // Remove headers (## text)
+                    body = body.replace(/^#+\s+(.+?)$/gm, '$1');
+                    // Clean up any remaining markdown artifacts
+                    body = body.trim();
+                }
+                
+                // Strip markdown from subject too
+                if (subject) {
+                    subject = subject.replace(/\*\*(.+?)\*\*/g, '$1');
+                    subject = subject.replace(/__(.+?)__/g, '$1');
+                    subject = subject.replace(/\*(.+?)\*/g, '$1');
+                    subject = subject.replace(/_(.+?)_/g, '$1');
+                    subject = subject.trim();
+                }
+                
+                // Set subject if found
+                if (subject) {
+                    $('.compose_subject').val(subject);
+                }
+                
+                // Insert the body text
                 var current_body = $('.compose_body').val();
-                var new_body = res.ai_generated_text;
+                var new_body = body;
                 
                 // If there's existing content, add it after the generated text
                 if (current_body && current_body.trim() !== '') {
-                    new_body = res.ai_generated_text + '\n\n' + current_body;
+                    new_body = body + '\n\n' + current_body;
                 }
                 
                 $('.compose_body').val(new_body);

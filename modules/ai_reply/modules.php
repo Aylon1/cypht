@@ -240,8 +240,8 @@ class Hm_Handler_process_ai_reply_system_prompt_setting extends Hm_Handler_Modul
         function ai_reply_system_prompt_callback($val) {
             return $val;
         }
-        process_site_setting('ai_reply_system_prompt', $this, 'ai_reply_system_prompt_callback', 
-            'You are a helpful email assistant. Generate professional and concise email responses.');
+        process_site_setting('ai_reply_system_prompt', $this, 'ai_reply_system_prompt_callback',
+            'You are an email writing assistant. CRITICAL: You MUST respond with ONLY valid JSON in this EXACT format: {"subject":"subject text","body":"body text"}. NO markdown (no **, no ##, no formatting). NO explanations. NO templates. NO placeholders like [Name]. Write the ACTUAL email with REAL content. Use plain text only. Example: {"subject":"Meeting Request","body":"Hi John,\\n\\nCould we meet on Monday?\\n\\nBest regards"}');
     }
 }
 
@@ -376,7 +376,7 @@ class Hm_Output_ai_reply_model_setting extends Hm_Output_Module {
 class Hm_Output_ai_reply_system_prompt_setting extends Hm_Output_Module {
     protected function output() {
         $settings = $this->get('user_settings', array());
-        $default_prompt = 'You are a helpful email assistant. Generate professional and concise email responses.';
+        $default_prompt = 'You are an email writing assistant. CRITICAL: You MUST respond with ONLY valid JSON in this EXACT format: {"subject":"subject text","body":"body text"}. NO markdown (no **, no ##, no formatting). NO explanations. NO templates. NO placeholders like [Name]. Write the ACTUAL email with REAL content. Use plain text only. Example: {"subject":"Meeting Request","body":"Hi John,\\n\\nCould we meet on Monday?\\n\\nBest regards"}';
         $system_prompt = $default_prompt;
         $reset = '';
         
