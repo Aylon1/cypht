@@ -1,0 +1,106 @@
+/**
+ * AI Reply module styles
+ */
+
+.ai_reply_tools {
+    border-top: 1px solid #dee2e6;
+    padding-top: 1rem;
+}
+
+.ai_reply_tools .btn-group {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.ai_generate_reply,
+.ai_generate_prompt {
+    transition: all 0.3s ease;
+}
+
+.ai_generate_reply:hover,
+.ai_generate_prompt:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.ai_generate_reply:disabled,
+.ai_generate_prompt:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.ai_reply_setting {
+    background-color: #f8f9fa;
+}
+
+.ai_reply_setting:hover {
+    background-color: #e9ecef;
+}
+
+#aiPromptModal .modal-body {
+    padding: 1.5rem;
+}
+
+#ai_custom_prompt {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    font-size: 0.95rem;
+    resize: vertical;
+}
+
+#ai_custom_prompt:focus {
+    border-color: #0d6efd;
+    box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+}
+
+/* Loading state animation */
+@keyframes ai-pulse {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.5;
+    }
+}
+
+.ai_generate_reply:disabled i,
+.ai_generate_prompt:disabled i,
+#ai_generate_from_prompt_btn:disabled i {
+    animation: ai-pulse 1.5s ease-in-out infinite;
+}
+
+/* Settings section styling */
+.ai_reply_setting td {
+    padding: 0.75rem;
+}
+
+.ai_reply_setting label {
+    font-weight: 500;
+    margin-bottom: 0;
+}
+
+.ai_reply_setting .form-text {
+    margin-top: 0.25rem;
+    color: #6c757d;
+}
+
+.ai_reply_setting .tooltip_restore {
+    margin-left: 0.5rem;
+    cursor: pointer;
+}
+
+.ai_reply_setting .tooltip_restore:hover i {
+    color: #0d6efd;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .ai_reply_tools .btn-group {
+        flex-direction: column;
+        width: 100%;
+    }
+    
+    .ai_generate_reply,
+    .ai_generate_prompt {
+        width: 100%;
+    }
+}
